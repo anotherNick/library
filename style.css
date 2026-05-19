@@ -1,0 +1,261 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Lora:ital,wght@0,400;0,500;1,400&display=swap');
+
+/* ── Design tokens ── */
+:root {
+  --bg:          #0f0e0d;
+  --surface:     #1a1917;
+  --surface-2:   #232220;
+  --border:      #2e2c29;
+  --border-mid:  #3d3b37;
+  --gold:        #c9a96e;
+  --gold-dim:    #8a6e42;
+  --text:        #e8e2d9;
+  --text-muted:  #7d7770;
+  --read:        #6b9e78;
+  --unread:      #c97b5a;
+  --danger:      #a84848;
+  --danger-hover:#c45555;
+
+  --radius:      6px;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body:    'Lora', Georgia, serif;
+}
+
+/* ── Reset & base ── */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse 80% 40% at 50% -10%, #2a2218 0%, transparent 70%);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 100vh;
+  margin: 0;
+  padding: 2rem 1rem 4rem;
+}
+
+/* ── Table ── */
+#books {
+  width: min(900px, 100%);
+  margin: 2.5rem auto;
+  border-collapse: collapse;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,.55);
+}
+
+caption {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  color: var(--gold);
+  padding: 1.4rem 1rem .8rem;
+  caption-side: top;
+  text-align: center;
+}
+
+th, td {
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 11px 14px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+/* header row (if you add <thead> later) */
+thead th {
+  background: var(--surface-2);
+  color: var(--gold-dim);
+  font-family: var(--font-display);
+  font-size: .8rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+/* alternating rows */
+tr.book:nth-child(even) { background: var(--surface-2); }
+tr.book:last-child td   { border-bottom: none; }
+tr.book {
+  transition: background .15s;
+}
+tr.book:hover { background: #201f1c; }
+
+/* read status cell */
+td.readMsg {
+  font-style: italic;
+  font-size: .88rem;
+  color: var(--text-muted);
+}
+
+/* ── Buttons (table) ── */
+tr.book button {
+  font-family: var(--font-body);
+  font-size: .78rem;
+  letter-spacing: .03em;
+  padding: 5px 11px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-mid);
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+  white-space: nowrap;
+}
+
+/* toggle read */
+tr.book td:nth-last-child(2) button {
+  background: transparent;
+  color: var(--gold);
+  border-color: var(--gold-dim);
+}
+tr.book td:nth-last-child(2) button:hover {
+  background: #2a2318;
+  border-color: var(--gold);
+}
+
+/* remove */
+tr.book td:last-child button {
+  background: transparent;
+  color: var(--danger);
+  border-color: #5a2e2e;
+}
+tr.book td:last-child button:hover {
+  background: #2a1818;
+  border-color: var(--danger-hover);
+  color: var(--danger-hover);
+}
+
+/* ── "Add a book" button ── */
+#new-book {
+  display: block;
+  margin: 0 auto;
+  font-family: var(--font-display);
+  font-size: .95rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--bg);
+  background: var(--gold);
+  border: none;
+  border-radius: var(--radius);
+  padding: 11px 28px;
+  cursor: pointer;
+  transition: background .2s, transform .1s;
+  box-shadow: 0 2px 12px rgba(201,169,110,.25);
+}
+#new-book:hover  { background: #d8b87e; }
+#new-book:active { transform: scale(.97); }
+
+/* ── Dialog ── */
+#new-book-dialog {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border-mid);
+  border-radius: calc(var(--radius) * 1.5);
+  padding: 2rem 2.2rem 1.8rem;
+  width: min(420px, 92vw);
+  box-shadow: 0 20px 60px rgba(0,0,0,.75);
+}
+
+#new-book-dialog::backdrop {
+  background: rgba(0,0,0,.72);
+  backdrop-filter: blur(3px);
+}
+
+/* dialog heading (optional — add an <h2> if desired) */
+#new-book-dialog h2 {
+  font-family: var(--font-display);
+  color: var(--gold);
+  margin: 0 0 1.4rem;
+  font-size: 1.45rem;
+  font-weight: 600;
+}
+
+/* ── Form ── */
+.form {
+  display: grid;
+  gap: 0;
+}
+
+label {
+  display: block;
+  font-size: .78rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  margin-bottom: 5px;
+  margin-top: 0;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+  display: block;
+  width: 100%;
+  margin-bottom: 1.1rem;
+  padding: 9px 12px;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-size: .93rem;
+  outline: none;
+  transition: border-color .15s;
+  appearance: none;
+}
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus {
+  border-color: var(--gold-dim);
+}
+select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238a6e42'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 30px;
+}
+
+/* form action row */
+.form-actions,
+#new-book-form > input[type="submit"],
+#new-book-form > #new-book-dialog-close {
+  display: inline-block;
+}
+
+#book-submit,
+#new-book-dialog-close {
+  font-family: var(--font-body);
+  font-size: .88rem;
+  padding: 9px 22px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background .15s, border-color .15s, color .15s;
+  margin-top: .3rem;
+}
+
+#book-submit {
+  background: var(--gold);
+  color: var(--bg);
+  font-weight: 600;
+  margin-right: 12px;
+  margin-bottom: 0;
+}
+#book-submit:hover { background: #d8b87e; }
+
+#new-book-dialog-close {
+  background: transparent;
+  color: var(--text-muted);
+  border-color: var(--border-mid);
+}
+#new-book-dialog-close:hover {
+  color: var(--text);
+  border-color: var(--border-mid);
+  background: var(--surface-2);
+}
