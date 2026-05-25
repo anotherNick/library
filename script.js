@@ -1,157 +1,164 @@
-const myLibrary = [];
+class Book {
 
-function Book(title, author, pages, read = false) {
+    #id;
+    #read;
 
-    if (!new.target) {
-        throw Error("You must use the 'new' operator to call the constructor.");
+    constructor(title, author, pages, read = false) {
+
+        this.title = title;
+        this.author = author;
+        this.pages = pages;
+        this.readMsg = "";
+        this.#read = read;
+        this.#id = crypto.randomUUID();
+        this.setReadMsg();
+
     }
 
-    this.title = title;
-    this.author = author;
-    this.pages = pages;
-    this.readMsg = "";
-
-    Object.defineProperties(this, {
-      'read': {
-        value: read,
-        writable: true,
-        enumerable: false,
-      },
-      'id': {
-        value: crypto.randomUUID(),
-        enumerable: false,
-      }
-    });
-
-    this.info = function() {
+    info = function() {
         return `${title} by ${author}, ${pages} pages, ${read}`;
     }
 
-    this.toggleRead = function() {
-        this.read = (this.read === true) ? false : true;
+    toggleRead = function() {
+        this.#read = (this.#read === true) ? false : true;
         this.setReadMsg();
     }
 
-    this.setReadMsg = function() {
-        this.readMsg = (this.read === true) ? 'Read' : 'Not yet read';
+    setReadMsg = function() {
+        this.readMsg = (this.#read === true) ? 'Read' : 'Not yet read';
     }
 
-    this.setReadMsg();
-
-}
-
-function getBookById(id) {
-
-    const index = myLibrary.findIndex(book => book.id === id);
-    
-    if(index !== -1) {
-        return myLibrary[index];
+    getId = function() {
+        return this.#id;
     }
-
 }
 
-function addBookToLibrary(title, author, pages, read) {
+const Library = new class {
 
-    const book = new Book(title, author, pages, read);
-    myLibrary.push(book);
-    return(book);
+    #books = [];
 
-}
+    addBook(title, author, pages, read) {
 
-function removeBookFromLibrary(id) {
-
-    const index = myLibrary.findIndex(book => book.id === id);
-
-    if (index !== -1) {
-        myLibrary.splice(index, 1);
-    }
-
-}
-
-function listBooks() {
-
-    const table = document.getElementById('books');
-
-    myLibrary.forEach(book => {
-        addBookToTable(table, book)
-    });
-
-}
-
-function addBookToTable(table, book) {
-
-    const row = document.createElement('tr');
-          row.className = "book";
-
-    for(const[key, value] of Object.entries(book)) {
-
-        if(typeof value === 'function') { continue; };
-
-        const cell = document.createElement('td');
-              cell.innerText = value;
-              cell.className = key;
-        
-        row.appendChild(cell);
+        const book = new Book(title, author, pages, read);
+        this.#books.push(book);
+        return(book);
 
     }
 
-    const removeBtn = document.createElement('button');
-            removeBtn.innerText = 'Remove from library';
-            removeBtn.value = book.id;
-            removeBtn.addEventListener('click', e => {
+    removeBook(id) {
+
+        const index = this.#books.findIndex(book => book.getId() === id);
+
+        if (index !== -1) {
+            this.#books.splice(index, 1);
+        }
+
+    }
+
+    getBookById(id) {
+
+        const index = this.#books.findIndex(book => book.getId() === id);
+        if(index !== -1) {
+            return this.#books[index];
+        }
+
+    }
+
+    getBooks(){
+        return this.#books;
+    }
+
+}
+
+const Display = new class {
+
+
+    listBooks() {
+
+        const table = document.getElementById('books');
+
+        Library.getBooks().forEach(book => {
+            this.addBook(table, book)
+        });
+
+    }
+
+    addBook(table, book) {
+
+        const row = document.createElement('tr');
+            row.className = "book";
+
+        for(const[key, value] of Object.entries(book)) {
+
+            if(typeof value === 'function') { continue; };
+
+            const cell = document.createElement('td');
+                cell.innerText = value;
+                cell.className = key;
             
-                const targetBook = getBookById(e.target.value);
-                removeBookFromLibrary(targetBook);
-                removeBookFromTable(e.target.closest('.book'));
-            
+            row.appendChild(cell);
+
+        }
+
+        const removeBtn = document.createElement('button');
+                removeBtn.innerText = 'Remove from library';
+                removeBtn.value = book.getId();
+                removeBtn.addEventListener('click', e => {
+                
+                    const targetBook = Library.getBookById(e.target.value);
+                    Library.removeBook(targetBook.getId());
+                    Display.removeBook(e.target.closest('.book'));
+                
+                });
+        const toggleReadBtn = document.createElement('button');
+            toggleReadBtn.innerText = 'Toggle read / unread'
+            toggleReadBtn.value = book.getId();
+            toggleReadBtn.addEventListener('click', e => {
+
+                    const targetBook = Library.getBookById(e.target.value);
+                    const tableRow = e.target.closest('.book');
+                    targetBook.toggleRead();
+                    Display.updateReadCell(targetBook, tableRow);
+
             });
-    const toggleReadBtn = document.createElement('button');
-          toggleReadBtn.innerText = 'Toggle read / unread'
-          toggleReadBtn.value = book.id;
-          toggleReadBtn.addEventListener('click', e => {
 
-                const targetBook = getBookById(e.target.value);
-                const tableRow = e.target.closest('.book');
-                targetBook.toggleRead();
-                updateReadCell(targetBook, tableRow);
+        const readBtnCell = document.createElement('td');
+        readBtnCell.append(toggleReadBtn);
+        
+        const removeBtnCell = document.createElement('td');
+        removeBtnCell.append(removeBtn);
 
-          });
+        row.append(readBtnCell, removeBtnCell);
+        table.append(row);
 
-    const readBtnCell = document.createElement('td');
-    readBtnCell.append(toggleReadBtn);
-    
-    const removeBtnCell = document.createElement('td');
-    removeBtnCell.append(removeBtn);
+    }
 
-    row.append(readBtnCell, removeBtnCell);
-    table.append(row);
+    removeBook(tableRow) {
 
-}
+        tableRow.remove();
 
-function removeBookFromTable(tableRow) {
+    }
 
-    tableRow.remove();
+    updateReadCell(book, row) {
+
+        const cell = row.querySelector('.readMsg');
+        cell.innerText = book.readMsg;
+
+    }
 
 }
 
-function updateReadCell(book, row) {
+Library.addBook('Faust', 'Johann Wolfgang von Goethe', 158, true);
+Library.addBook('The Divine Comedy', 'Dante Aleghieri', 798, false);
+Library.addBook('Paradise Lost', 'John Milton', 453, false);
+Library.addBook('Doctor Faustus', 'Thomas Mann', 534, false);
+Library.addBook('The Picture of Dorian Gray', 'Oscar Wilde', 254, false);
+Library.addBook('The Master and Margarita', 'Mikhail Bulgakov', 384, false);
+Library.addBook('The Magic Skin', 'Honore de Balzac', 304, false);
+Library.addBook('Johannes Cabal the Necromancer', "Jonathan L. Howard", 320, false);
+Library.addBook('Needful Things', 'Stephen King', 816, false);
 
-    const cell = row.querySelector('.readMsg');
-    cell.innerText = book.readMsg;
-
-}
-
-addBookToLibrary('Faust', 'Johann Wolfgang von Goethe', 158, true);
-addBookToLibrary('The Divine Comedy', 'Dante Aleghieri', 798, false);
-addBookToLibrary('Paradise Lost', 'John Milton', 453, false);
-addBookToLibrary('Doctor Faustus', 'Thomas Mann', 534, false);
-addBookToLibrary('The Picture of Dorian Gray', 'Oscar Wilde', 254, false);
-addBookToLibrary('The Master and Margarita', 'Mikhail Bulgakov', 384, false);
-addBookToLibrary('The Magic Skin', 'Honore de Balzac', 304, false);
-addBookToLibrary('Johannes Cabal the Necromancer', "Jonathan L. Howard", 320, false);
-addBookToLibrary('Needful Things', 'Stephen King', 816, false);
-
-listBooks();
+Display.listBooks();
 
 const newBookDialog = document.querySelector('#new-book-dialog');
 
@@ -172,9 +179,9 @@ newBookForm.addEventListener('submit', () => {
     const formOutput = new FormData(newBookForm);
     const bookData = Object.fromEntries(formOutput.entries());
           bookData.read = (bookData.read === "Yes") ? true : false;
-    const book = addBookToLibrary(bookData.title, bookData.author, bookData.pages, bookData.read);
+    const book = Library.addBook(bookData.title, bookData.author, bookData.pages, bookData.read);
     const table = document.getElementById('books');
     
-    addBookToTable(table, book);
+    Display.addBook(table, book);
     newBookForm.reset();
 });
